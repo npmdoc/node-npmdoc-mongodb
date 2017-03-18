@@ -51,7 +51,7 @@
         
         href="https://github.com/mongodb/node-mongodb-native"
         
-    >mongodb (v2.2.24)</a>
+    >mongodb (v2.2.25)</a>
 </h1>
 <div class="apidocSectionDiv"><a
     href="#apidoc.tableOfContents"
@@ -65,6 +65,15 @@
             <a class="apidocElementLiA" href="#apidoc.element.mongodb.Admin">
             function <span class="apidocSignatureSpan">mongodb.</span>Admin
             <span class="apidocSignatureSpan">(db, topology, promiseLibrary)</span>
+            </a>
+            
+        </li>
+        
+        <li>
+            
+            <a class="apidocElementLiA" href="#apidoc.element.mongodb.BSONRegExp">
+            function <span class="apidocSignatureSpan">mongodb.</span>BSONRegExp
+            <span class="apidocSignatureSpan">(pattern, options)</span>
             </a>
             
         </li>
@@ -803,6 +812,19 @@
             <a class="apidocElementLiA" href="#apidoc.element.mongodb.Admin.prototype.validateCollection">
             function <span class="apidocSignatureSpan">mongodb.Admin.prototype.</span>validateCollection
             <span class="apidocSignatureSpan">(collectionName, options, callback)</span>
+            </a>
+            
+        </li>
+        
+    </ol></li>
+    
+    <li class="apidocModuleLi"><a href="#apidoc.module.mongodb.BSONRegExp">module mongodb.BSONRegExp</a><ol>
+        
+        <li>
+            
+            <a class="apidocElementLiA" href="#apidoc.element.mongodb.BSONRegExp.BSONRegExp">
+            function <span class="apidocSignatureSpan">mongodb.</span>BSONRegExp
+            <span class="apidocSignatureSpan">(pattern, options)</span>
             </a>
             
         </li>
@@ -6382,6 +6404,15 @@
         
         <li>
             
+            <a class="apidocElementLiA" href="#apidoc.element.mongodb.command_cursor.prototype.setCursorBatchSize">
+            function <span class="apidocSignatureSpan">mongodb.command_cursor.prototype.</span>setCursorBatchSize
+            <span class="apidocSignatureSpan">(value)</span>
+            </a>
+            
+        </li>
+        
+        <li>
+            
             <a class="apidocElementLiA" href="#apidoc.element.mongodb.command_cursor.prototype.setReadPreference">
             function <span class="apidocSignatureSpan">mongodb.command_cursor.prototype.</span>setReadPreference
             <span class="apidocSignatureSpan">(r)</span>
@@ -6533,6 +6564,15 @@
         
         <li>
             
+            <a class="apidocElementLiA" href="#apidoc.element.mongodb.utils.getReadPreference">
+            function <span class="apidocSignatureSpan">mongodb.utils.</span>getReadPreference
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+            
+        </li>
+        
+        <li>
+            
             <a class="apidocElementLiA" href="#apidoc.element.mongodb.utils.getSingleProperty">
             function <span class="apidocSignatureSpan">mongodb.utils.</span>getSingleProperty
             <span class="apidocSignatureSpan">(obj, name, value)</span>
@@ -6641,6 +6681,39 @@
       db: db
     , topology: topology
     , promiseLibrary: promiseLibrary
+  }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+    
+    
+    
+    <h2>
+        <a href="#apidoc.element.mongodb.BSONRegExp" id="apidoc.element.mongodb.BSONRegExp">
+        function <span class="apidocSignatureSpan">mongodb.</span>BSONRegExp
+        <span class="apidocSignatureSpan">(pattern, options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function BSONRegExp(pattern, options) {
+  if(!(this instanceof BSONRegExp)) return new BSONRegExp();
+
+  // Execute
+  this._bsontype = &#x27;BSONRegExp&#x27;;
+  this.pattern = pattern || &#x27;&#x27;;
+  this.options = options || &#x27;&#x27;;
+
+  // Validate options
+  for(var i = 0; i &#x3c; this.options.length; i++) {
+    if(!(this.options[i] == &#x27;i&#x27;
+      || this.options[i] == &#x27;m&#x27;
+      || this.options[i] == &#x27;x&#x27;
+      || this.options[i] == &#x27;l&#x27;
+      || this.options[i] == &#x27;s&#x27;
+      || this.options[i] == &#x27;u&#x27;
+    )) {
+      throw new Error(&#x27;the regular expression options [&#x27; + this.options[i] + &#x22;] is not supported&#x22;);
+    }
   }
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
@@ -6900,6 +6973,7 @@ ializeFunctions;
 
   // SSL options
   this.ca = options.ca || null;
+  this.crl = options.crl || null;
   this.cert = options.cert || null;
   this.key = options.key || null;
   this.passphrase = options.passphrase || null;
@@ -7079,6 +7153,14 @@ ializeFunctions;
 
   // Set the sort value
   this.sortValue = self.s.cmd.sort;
+
+  // Get the batchSize
+  var batchSize = cmd.cursor &#x26;&#x26; cmd.cursor.batchSize
+    ? cmd.cursor &#x26;&#x26; cmd.cursor.batchSize
+    : (options.cursor &#x26;&#x26; options.cursor.batchSize ? options.cursor.batchSize : 1000);
+
+  // Set the batchSize
+  this.setCursorBatchSize(batchSize);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -7520,6 +7602,7 @@ ializeFunctions;
    * @param {number} [options.poolSize=5] poolSize The maximum size of the individual server pool.
    * @param {boolean} [options.ssl=false] Enable SSL connection.
    * @param {Buffer} [options.sslCA=undefined] SSL Certificate store binary buffer
+   * @param {Buffer} [options.sslCRL=undefined] SSL Certificate revocation list binary buffer
    * @param {Buffer} [options.sslCert=undefined] SSL Certificate binary buffer
    * @param {Buffer} [options.sslKey=undefined] SSL Key file binary buffer
    * @param {string} [options.sslPass=undefined] SSL Certificate pass phrase
@@ -7553,8 +7636,7 @@ n.
 eive wrapper types.
    * @param {number} [options.bufferMaxEntries=-1] Sets a cap on how many operations the driver will buffer up before giving up \
 on getting a working connection, default is -1 which is unlimited.
-   * @param {(ReadPreference|string)} [options.readPreference=null] The preferred read preference (ReadPreference.PRIMARY, ReadP\
-reference.PRIMARY_PREFERRED, ReadPreferen ...</pre></li>
+   * @param {(ReadPreference|string)} [options.readPreference=null] The prefe ...</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
     
@@ -9030,6 +9112,44 @@ MongoClient.<span class="apidocCodeKeywordSpan">connect</span>(url, function(err
       resolve(r);
     });
   });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+    
+    
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.mongodb.BSONRegExp" id="apidoc.module.mongodb.BSONRegExp">module mongodb.BSONRegExp</a></h1>
+    
+    
+    <h2>
+        <a href="#apidoc.element.mongodb.BSONRegExp.BSONRegExp" id="apidoc.element.mongodb.BSONRegExp.BSONRegExp">
+        function <span class="apidocSignatureSpan">mongodb.</span>BSONRegExp
+        <span class="apidocSignatureSpan">(pattern, options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function BSONRegExp(pattern, options) {
+  if(!(this instanceof BSONRegExp)) return new BSONRegExp();
+
+  // Execute
+  this._bsontype = &#x27;BSONRegExp&#x27;;
+  this.pattern = pattern || &#x27;&#x27;;
+  this.options = options || &#x27;&#x27;;
+
+  // Validate options
+  for(var i = 0; i &#x3c; this.options.length; i++) {
+    if(!(this.options[i] == &#x27;i&#x27;
+      || this.options[i] == &#x27;m&#x27;
+      || this.options[i] == &#x27;x&#x27;
+      || this.options[i] == &#x27;l&#x27;
+      || this.options[i] == &#x27;s&#x27;
+      || this.options[i] == &#x27;u&#x27;
+    )) {
+      throw new Error(&#x27;the regular expression options [&#x27; + this.options[i] + &#x22;] is not supported&#x22;);
+    }
+  }
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -11745,6 +11865,7 @@ var updateDocument = function(db, callback) {
 
   // SSL options
   this.ca = options.ca || null;
+  this.crl = options.crl || null;
   this.cert = options.cert || null;
   this.key = options.key || null;
   this.passphrase = options.passphrase || null;
@@ -11894,6 +12015,7 @@ var updateDocument = function(db, callback) {
 
     // Set options for ssl
     if(self.ca) sslOptions.ca = self.ca;
+    if(self.crl) sslOptions.crl = self.crl;
     if(self.cert) sslOptions.cert = self.cert;
     if(self.key) sslOptions.key = self.key;
     if(self.passphrase) sslOptions.passphrase = self.passphrase;
@@ -12336,8 +12458,10 @@ MongoClient.<span class="apidocCodeKeywordSpan">connect</span>(url, function(err
     ignoreUndefined: typeof options.ignoreUndefined == &#x27;boolean&#x27; ? options.ignoreUndefined : false
   };
 
-  // Create a query instance
-  var query = new Query(self.s.bson, ns, cmd, queryOptions);
+  // Are we executing against a specific topology
+  var topology = options.topology || {};
+  // Create the query object
+  var query = self.wireProtocolHandler.command(self.s.bson, ns, cmd, {}, topology, options);
   // Set slave OK of the query
   query.slaveOk = options.readPreference ? options.readPreference.slaveOk() : false;
 
@@ -12884,6 +13008,14 @@ define.classMethod(&#x27;maxTimeMS&#x27;, {callback: false, promise:false, retur
 
   // Set the sort value
   this.sortValue = self.s.cmd.sort;
+
+  // Get the batchSize
+  var batchSize = cmd.cursor &#x26;&#x26; cmd.cursor.batchSize
+    ? cmd.cursor &#x26;&#x26; cmd.cursor.batchSize
+    : (options.cursor &#x26;&#x26; options.cursor.batchSize ? options.cursor.batchSize : 1000);
+
+  // Set the batchSize
+  this.setCursorBatchSize(batchSize);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -12998,6 +13130,14 @@ define.classMethod(&#x27;maxTimeMS&#x27;, {callback: false, promise:false, retur
 
   // Set the sort value
   this.sortValue = self.s.cmd.sort;
+
+  // Get the batchSize
+  var batchSize = cmd.cursor &#x26;&#x26; cmd.cursor.batchSize
+    ? cmd.cursor &#x26;&#x26; cmd.cursor.batchSize
+    : (options.cursor &#x26;&#x26; options.cursor.batchSize ? options.cursor.batchSize : 1000);
+
+  // Set the batchSize
+  this.setCursorBatchSize(batchSize);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -18650,6 +18790,7 @@ object.dbName = dbName || &#x27;admin&#x27;;
    * @param {number} [options.poolSize=5] poolSize The maximum size of the individual server pool.
    * @param {boolean} [options.ssl=false] Enable SSL connection.
    * @param {Buffer} [options.sslCA=undefined] SSL Certificate store binary buffer
+   * @param {Buffer} [options.sslCRL=undefined] SSL Certificate revocation list binary buffer
    * @param {Buffer} [options.sslCert=undefined] SSL Certificate binary buffer
    * @param {Buffer} [options.sslKey=undefined] SSL Key file binary buffer
    * @param {string} [options.sslPass=undefined] SSL Certificate pass phrase
@@ -18683,8 +18824,7 @@ n.
 eive wrapper types.
    * @param {number} [options.bufferMaxEntries=-1] Sets a cap on how many operations the driver will buffer up before giving up \
 on getting a working connection, default is -1 which is unlimited.
-   * @param {(ReadPreference|string)} [options.readPreference=null] The preferred read preference (ReadPreference.PRIMARY, ReadP\
-reference.PRIMARY_PREFERRED, ReadPreferen ...</pre></li>
+   * @param {(ReadPreference|string)} [options.readPreference=null] The prefe ...</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
     
@@ -18790,6 +18930,7 @@ MongoClient.<span class="apidocCodeKeywordSpan">connect</span>(url, function(err
    * @param {number} [options.poolSize=5] poolSize The maximum size of the individual server pool.
    * @param {boolean} [options.ssl=false] Enable SSL connection.
    * @param {Buffer} [options.sslCA=undefined] SSL Certificate store binary buffer
+   * @param {Buffer} [options.sslCRL=undefined] SSL Certificate revocation list binary buffer
    * @param {Buffer} [options.sslCert=undefined] SSL Certificate binary buffer
    * @param {Buffer} [options.sslKey=undefined] SSL Key file binary buffer
    * @param {string} [options.sslPass=undefined] SSL Certificate pass phrase
@@ -18823,8 +18964,7 @@ n.
 eive wrapper types.
    * @param {number} [options.bufferMaxEntries=-1] Sets a cap on how many operations the driver will buffer up before giving up \
 on getting a working connection, default is -1 which is unlimited.
-   * @param {(ReadPreference|string)} [options.readPreference=null] The preferred read preference (ReadPreference.PRIMARY, ReadP\
-reference.PRIMARY_PREFERRED, ReadPreferen ...</pre></li>
+   * @param {(ReadPreference|string)} [options.readPreference=null] The prefe ...</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
     
@@ -19254,7 +19394,7 @@ Let&#x27;s Add some code to show the different CRUD operations available.
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">command = function (ns, cmd, options, callback) {
-  this.s.mongos.command(ns, cmd, options, callback);
+  this.s.mongos.command(ns, cmd, getReadPreference(options), callback);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -20578,8 +20718,7 @@ Let&#x27;s Add some code to show the different CRUD operations available.
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">command = function (ns, cmd, options, callback) {
-  options = translateReadPreference(options);
-  this.s.replset.command(ns, cmd, options, callback);
+  this.s.replset.command(ns, cmd, getReadPreference(options), callback);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -21281,7 +21420,7 @@ Let&#x27;s Add some code to show the different CRUD operations available.
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">command = function (ns, cmd, options, callback) {
-  this.s.server.command(ns, cmd, options, callback);
+  this.s.server.command(ns, cmd, getReadPreference(options), callback);
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -26296,6 +26435,39 @@ var command = {
     
     
     <h2>
+        <a href="#apidoc.element.mongodb.command_cursor.prototype.setCursorBatchSize" id="apidoc.element.mongodb.command_cursor.prototype.setCursorBatchSize">
+        function <span class="apidocSignatureSpan">mongodb.command_cursor.prototype.</span>setCursorBatchSize
+        <span class="apidocSignatureSpan">(value)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">setCursorBatchSize = function (value) {
+  this.cursorState.batchSize = value;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+* @throws {MongoError}
+* @return {AggregationCursor}
+*/
+AggregationCursor.prototype.batchSize = function(value) {
+ if(this.s.state == AggregationCursor.CLOSED || this.isDead()) throw MongoError.create({message: &#x22;Cursor is closed&#x22;, d\
+river:true });
+ if(typeof value != &#x27;number&#x27;) throw MongoError.create({message: &#x22;batchSize requires an integer&#x22;, drvier:true\
+ });
+ if(this.s.cmd.cursor) this.s.cmd.cursor.batchSize = value;
+ this.<span class="apidocCodeKeywordSpan">setCursorBatchSize</span>(value);
+ return this;
+}
+
+define.classMethod(&#x27;batchSize&#x27;, {callback: false, promise:false, returns: [AggregationCursor]});
+
+/**
+* Add a geoNear stage to the aggregation pipeline
+...</pre></li>
+    </ul>
+    
+    
+    
+    <h2>
         <a href="#apidoc.element.mongodb.command_cursor.prototype.setReadPreference" id="apidoc.element.mongodb.command_cursor.prototype.setReadPreference">
         function <span class="apidocSignatureSpan">mongodb.command_cursor.prototype.</span>setReadPreference
         <span class="apidocSignatureSpan">(r)</span>
@@ -26797,6 +26969,39 @@ AggregationCursor]});
     
     
     <h2>
+        <a href="#apidoc.element.mongodb.utils.getReadPreference" id="apidoc.element.mongodb.utils.getReadPreference">
+        function <span class="apidocSignatureSpan">mongodb.utils.</span>getReadPreference
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">getReadPreference = function (options) {
+  var r = null
+  if(options.readPreference) {
+    r = options.readPreference
+  } else {
+    return options;
+  }
+
+  if(r instanceof ReadPreference) {
+    options.readPreference = new CoreReadPreference(r.mode, r.tags, {maxStalenessSeconds: r.maxStalenessSeconds});
+  } else if(typeof r == &#x27;string&#x27;) {
+    options.readPreference = new CoreReadPreference(r);
+  } else if(r &#x26;&#x26; !(r instanceof ReadPreference) &#x26;&#x26; typeof r == &#x27;object&#x27;) {
+    var mode = r.mode || r.preference;
+    if (mode &#x26;&#x26; typeof mode == &#x27;string&#x27;) {
+      options.readPreference = new CoreReadPreference(mode, r.tags, {maxStalenessSeconds: r.maxStalenessSeconds});
+    }
+  }
+
+  return options;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+    
+    
+    
+    <h2>
         <a href="#apidoc.element.mongodb.utils.getSingleProperty" id="apidoc.element.mongodb.utils.getSingleProperty">
         function <span class="apidocSignatureSpan">mongodb.utils.</span>getSingleProperty
         <span class="apidocSignatureSpan">(obj, name, value)</span>
@@ -26849,7 +27054,7 @@ AggregationCursor]});
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">isObject = function (arg) {
-  return &#x27;[object Object]&#x27; == toString.call(arg)
+  return &#x27;[object Object]&#x27; == Object.prototype.toString.call(arg)
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
@@ -27023,7 +27228,8 @@ AggregationCursor]});
     <li>description and source-code<pre class="apidocCodePre">translateOptions = function (target, source) {
   var translations = {
     // SSL translation options
-    &#x27;sslCA&#x27;: &#x27;ca&#x27;, &#x27;sslValidate&#x27;: &#x27;rejectUnauthorized&#x27;, &#x27;sslKey&#x27;: &#x27;key&#x27;, &#x27;sslCert&#x27;: &#x27;cert&#x27;, &#x27;sslPass&#x27;: &#x27;passphrase&#x27;,
+    &#x27;sslCA&#x27;: &#x27;ca&#x27;, &#x27;sslCRL&#x27;: &#x27;crl&#x27;, &#x27;sslValidate&#x27;: &#x27;rejectUnauthorized&#x27;, &#x27;sslKey&#x27;: &#x27;key&#x27;, 
+    &#x27;sslCert&#x27;: &#x27;cert&#x27;, &#x27;sslPass&#x27;: &#x27;passphrase&#x27;,
     // SocketTimeout translation options
     &#x27;socketTimeoutMS&#x27;: &#x27;socketTimeout&#x27;, &#x27;connectTimeoutMS&#x27;: &#x27;connectionTimeout&#x27;,
     // Replicaset options

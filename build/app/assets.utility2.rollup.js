@@ -567,7 +567,9 @@ local.templateApidocMd = '\
                 return text;
             };
             // init options
+            console.error('apidocCreate - normalizing dir ' + options.dir);
             options.dir = local.moduleDirname(options.dir);
+            console.error('apidocCreate - normalized dir ' + options.dir);
             local.objectSetDefault(options, {
                 packageJson: JSON.parse(readExample('package.json'))
             });
@@ -9264,7 +9266,7 @@ split_lines=split_lines,exports.MAP=MAP,exports.ast_squeeze_more=require("./sque
         // init assets and templates
         local.assetsDict = {};
 /* jslint-ignore-begin */
-local.assetsDict['/'] = local.assetsDict['/assets.index.template.html'] = '\
+local.assetsDict['/assets.index.template.html'] = '\
 <!doctype html>\n\
 <html lang="en">\n\
 <head>\n\
@@ -9364,11 +9366,11 @@ local.assetsDict['/assets.buildBadge.template.svg'] =
 
 
 
-local.assetsDict['/assets.example.js'] = local.assetsDict['/assets.example.template.js'] = '\
+local.assetsDict['/assets.example.template.js'] = '\
 /*\n\
 example.js\n\
 \n\
-{{exampleJsDescription}}\n\
+quickstart example\n\
 \n\
 instruction\n\
     1. save this script as example.js\n\
@@ -9567,7 +9569,8 @@ local.assetsDict['/assets.index.template.html'].replace((/\n/g), '\\n\\\n') +
         if (local.global.utility2_rollup || module !== require.main) {\n\
             break;\n\
         }\n\
-        local.assetsDict[\'/assets.example.js\'] = local.assetsDict[\'/assets.example.js\'] ||\n\
+        local.assetsDict[\'/assets.example.js\'] =\n\
+            local.assetsDict[\'/assets.example.js\'] ||\n\
             local.fs.readFileSync(__filename, \'utf8\');\n\
         local.assetsDict[\'/assets.jslint.rollup.js\'] =\n\
             local.assetsDict[\'/assets.jslint.rollup.js\'] || local.fs.readFileSync(\n\
@@ -9769,9 +9772,8 @@ example module\n\
     "scripts": {\n\
         "build-ci": "utility2 shReadmeTest build_ci.sh",\n\
         "env": "env",\n\
-        "heroku-postbuild": "(set -e; npm install \'kaizhu256/node-utility2#alpha\'; utility2 shDeployHeroku)",\n\
+        "heroku-postbuild": "(set -e; npm install \\\"kaizhu256/node-utility2#alpha\\\"; utility2 shDeployHeroku)",\n\
         "postinstall": "if [ -f lib.jslint.npm_scripts.sh ]; then ./lib.jslint.npm_scripts.sh postinstall; fi",\n\
-        "publish-alias": "VERSION=$(npm info $npm_package_name version); for ALIAS in; do utility2 shNpmPublishAs . $ALIAS $VERSION; eval utility2 shNpmTestPublished $ALIAS || exit $?; done",\n\
         "start": "(set -e; export PORT=${PORT:-8080}; utility2 start test.js)",\n\
         "test": "(set -e; export PORT=$(utility2 shServerPortRandom); utility2 test test.js)"\n\
     },\n\
@@ -9826,7 +9828,7 @@ shBuildCi\n\
 
 
 
-local.assetsDict['/assets.test.js'] = local.assetsDict['/assets.test.template.js'] = '\
+local.assetsDict['/assets.test.template.js'] = '\
 /* istanbul instrument in package jslint */\n\
 /*jslint\n\
     bitwise: true,\n\
@@ -9918,7 +9920,9 @@ local.assetsDict['/assets.test.js'] = local.assetsDict['/assets.test.template.js
     // run browser js\-env code - post-init\n\
     case \'browser\':\n\
         // run tests\n\
-        local.nop(local.modeTest && document.querySelector(\'#testRunButton1\').click());\n\
+        local.nop(local.modeTest &&\n\
+            document.querySelector(\'#testRunButton1\') &&\n\
+            document.querySelector(\'#testRunButton1\').click());\n\
         break;\n\
 \n\
 \n\
@@ -9998,7 +10002,7 @@ local.assetsDict['/assets.test.js'] = local.assetsDict['/assets.test.template.js
             onError\n\
         ) {\n\
         /*\n\
-         * this function will test the webpage\'s default handling-behavior\n\
+         * this function will test webpage\'s default handling-behavior\n\
          */\n\
             options = { modeCoverageMerge: true, url: local.serverLocalHost + \'?modeTest=1\' };\n\
             local.browserTest(options, onError);\n\
@@ -11654,14 +11658,17 @@ return Utf8ArrayToStr(bff);
         /*
          * this function will build the lib
          */
-            options.dataFrom = options.dataFrom || local.tryCatchReadFile(
-                'lib.' + local.env.npm_package_nameAlias + '.js',
-                'utf8'
-            );
-            options.dataTo = local.templateRenderJslintLite(
-                local.assetsDict['/assets.lib.template.js'],
-                {}
-            );
+            local.objectSetDefault(options, {
+                customize: local.nop,
+                dataFrom: local.tryCatchReadFile(
+                    'lib.' + local.env.npm_package_nameAlias + '.js',
+                    'utf8'
+                ),
+                dataTo: local.templateRenderJslintLite(
+                    local.assetsDict['/assets.lib.template.js'],
+                    {}
+                )
+            });
             // search-and-replace - customize dataTo
             [
                 // customize body before istanbul
@@ -11679,7 +11686,7 @@ return Utf8ArrayToStr(bff);
                     });
                 });
             });
-            local.runIfTrue(options.customize, options.customize);
+            options.customize();
             // save lib.xxx.js
             local.fs.writeFileSync(
                 'lib.' + local.env.npm_package_nameAlias + '.js',
@@ -11744,7 +11751,10 @@ return Utf8ArrayToStr(bff);
         /*
          * this function will build the readme in jslint-lite style
          */
-            options.dataFrom = options.dataFrom || local.tryCatchReadFile('README.md', 'utf8');
+            local.objectSetDefault(options, {
+                customize: local.nop,
+                dataFrom: local.tryCatchReadFile('README.md', 'utf8')
+            });
             // init package.json
             options.rgx = (/\n# package.json\n```json\n([\S\s]*?)\n```\n/);
             options.dataFrom.replace(options.rgx, function (match0, match1) {
@@ -11824,7 +11834,7 @@ return Utf8ArrayToStr(bff);
                     options.dataTo = options.dataTo.replace(match1 + match2, match0);
                 }
             );
-            local.runIfTrue(options.customize, options.customize);
+            options.customize();
             // save README.md
             local.fs.writeFileSync('README.md', options.dataTo);
             onError();
@@ -11834,21 +11844,25 @@ return Utf8ArrayToStr(bff);
         /*
          * this function will build the test
          */
-            options.dataFrom = options.dataFrom || local.tryCatchReadFile('test.js', 'utf8');
-            options.dataTo = local.templateRenderJslintLite(
-                local.assetsDict['/assets.test.template.js'],
-                {}
-            );
+            local.objectSetDefault(options, {
+                customize: local.nop,
+                dataFrom: local.tryCatchReadFile('test.js', 'utf8'),
+                dataTo: local.templateRenderJslintLite(
+                    local.assetsDict['/assets.test.template.js'],
+                    {}
+                )
+            });
             // search-and-replace - customize dataTo
             [
                 // customize js\-env code
+                new RegExp('\\n {4}\\/\\/ run shared js\\-env code - pre-init\\n[\\S\\s]*?' +
+                    '^ {4}\\(function \\(\\) \\{\\n', 'm'),
                 (/\n {8}local.global.local = local;\n[\S\s]*?^ {4}\}\(\)\);\n/m),
-                (/\n {4}\/\/ run browser js\-env code - pre-init\n[\S\s]*?\n {8}break;\n/),
-                (/\n {4}\/\/ run node js\-env code - pre-init\n[\S\s]*?\n {8}break;\n/),
                 (/\n {4}\/\/ run shared js\-env code - function\n[\S\s]*?\n {4}\}\(\)\);\n/),
                 (/\n {4}\/\/ run browser js\-env code - function\n[\S\s]*?\n {8}break;\n/),
-                (/\n {4}\/\/ run shared js\-env code - pre-init\n[\S\s]*?\n {4}\}\(\)\);\n/),
                 (/\n {4}\/\/ run node js\-env code - function\n[\S\s]*?\n {8}break;\n/),
+                new RegExp('\\n {4}\\/\\/ run browser js\\-env code - post-init\\n[\\S\\s]*?' +
+                    '^ {4}case \'browser\':\n', 'm'),
                 (/\n {4}\/\/ run shared js\-env code - post-init\n[\S\s]*?\n {4}\}\(\)\);\n/)
             ].forEach(function (rgx) {
                 // handle large string-replace
@@ -11861,7 +11875,7 @@ return Utf8ArrayToStr(bff);
                     });
                 });
             });
-            local.runIfTrue(options.customize, options.customize);
+            options.customize();
             // save test.js
             local.fs.writeFileSync('test.js', options.dataTo);
             onError();
@@ -12822,6 +12836,15 @@ return Utf8ArrayToStr(bff);
             }
         };
 
+        local.onErrorThrow = function (error) {
+        /*
+         * this function will assert no error occurred
+         */
+            if (error) {
+                throw error;
+            }
+        };
+
         local.onErrorWithStack = function (onError) {
         /*
          * this function will create a new callback that will call onError,
@@ -12838,15 +12861,6 @@ return Utf8ArrayToStr(bff);
                 }
                 onError(error, data, meta);
             };
-        };
-
-        local.onErrorThrow = function (error) {
-        /*
-         * this function will assert no error occurred
-         */
-            if (error) {
-                throw error;
-            }
         };
 
         local.onFileModifiedRestart = function (file) {
@@ -13181,13 +13195,12 @@ vendor\\)\\(\\b\\|[_s]\\)\
                 self.socket.setKeepAlive(true);
             });
             // coverage-hack
-            [null, process.env.PORT_REPL].forEach(function (element) {
-                if (!element) {
-                    return;
-                }
+            (function () {
+                return;
+            }(process.env.PORT_REPL && (function () {
                 console.log('repl-server listening on tcp-port ' + process.env.PORT_REPL);
                 global.utility2_serverReplTcp1.listen(process.env.PORT_REPL);
-            });
+            }())));
         };
 
         local.requireExampleJsFromReadme = function () {
@@ -13230,9 +13243,12 @@ vendor\\)\\(\\b\\|[_s]\\)\
                     ),
                     { env: local.env, isRollup: true }
                 );
+                local.assetsDict['/assets.example.js'] =
+                    local.assetsDict['/assets.example.template.js'];
                 local.assetsDict['/assets.app.js'] =
                     local.fs.readFileSync(__filename, 'utf8').replace((/^#!/), '//');
-                local.runIfTrue(local.env.npm_config_mode_start, function () {
+                // coverage-hack
+                local.nop(local.env.npm_config_mode_start && (function () {
                     local.assetsDict['/assets.app.js'] =
                         local.assetsDict['/assets.utility2.rollup.begin.js'];
                     local.assetsDict['/assets.app.js'] += '\n\n\n' +
@@ -13242,7 +13258,7 @@ vendor\\)\\(\\b\\|[_s]\\)\
                     local.assetsDict['/assets.app.js'] += '\n\n\n' +
                         local.assetsDict['/assets.test.js'];
                     local.global.local = local;
-                });
+                }()));
                 local[local.env.npm_package_nameAlias] = local;
                 return local;
             }
@@ -13260,7 +13276,8 @@ vendor\\)\\(\\b\\|[_s]\\)\
                 local.assetsDict['/assets.example.template.js'],
                 {}
             );
-            local.runIfTrue(local.env.npm_package_readmeParse, function () {
+            // coverage-hack
+            local.nop(local.env.npm_package_readmeParse && (function () {
                 local.fs.readFileSync('README.md', 'utf8').replace(
                     (/```\w*?(\n[\W\s]*?example\.js[\n\"][\S\s]+?)\n```/),
                     function (match0, match1, ii, text) {
@@ -13270,7 +13287,7 @@ vendor\\)\\(\\b\\|[_s]\\)\
                         script = text.slice(0, ii).replace((/.+/g), '') + match1;
                     }
                 );
-            });
+            }()));
             script = script
                 // alias require($npm_package_name) to utility2_moduleExports;
                 .replace(
@@ -13360,21 +13377,23 @@ instruction\n\
                     script = local.assetsDict[
                         '/assets.' + local.env.npm_package_nameAlias + '.js'
                     ];
-                    local.runIfTrue(local.assetsDict[
+                    // coverage-hack
+                    local.nop(local.assetsDict[
                         '/assets.' + local.env.npm_package_nameAlias + '.rollup.js'
-                    ], function () {
+                    ] && (function () {
                         script = '';
-                    });
+                    }()));
                     break;
                 case '/assets.utility2.rollup.js':
                     script = local.assetsDict['/assets.utility2.rollup.js'];
-                    local.runIfTrue(local.assetsDict[
+                    // coverage-hack
+                    local.nop(local.assetsDict[
                         '/assets.' + local.env.npm_package_nameAlias + '.rollup.js'
-                    ], function () {
+                    ] && (function () {
                         script = local.assetsDict[
                             '/assets.' + local.env.npm_package_nameAlias + '.rollup.js'
                         ];
-                    });
+                    }()));
                     break;
                 default:
                     script = local.assetsDict[key];
@@ -13396,15 +13415,6 @@ instruction\n\
                 local.jslintAndPrintConditional(local.assetsDict[key], key);
             });
             return module.exports;
-        };
-
-        local.runIfTrue = function (condition, fnc) {
-        /*
-         * this function will run the fnc if condition is truthy
-         */
-            if (condition) {
-                fnc();
-            }
         };
 
         local.serverRespondDefault = function (request, response, statusCode, error) {
